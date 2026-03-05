@@ -3,7 +3,7 @@
 Welcome to **Bee Wise**, an iOS app built for the **Apple Swift Student Challenge**. Bee Wise helps beekeepers detect Varroa mites using advanced computer vision and provides actionable health and treatment recommendations.
 
 <p align="center">
-  <img src="Website/assets/BeeHive.png" width="400" alt="Bee Hive Representation">
+  <img src="docs/assets/BeeLogo.svg" width="400" alt="Bee Hive Representation">
 </p>
 
 ## Project Structure 📁
@@ -33,7 +33,7 @@ The workspace is organized into three major components:
 Beekeeping is an ancient art, but the threats facing modern hives require modern solutions. Created to bridge the gap between traditional apiculture and cutting-edge mobile technology, Bee Wise aims to automate the tedious and error-prone process of counting Varroa mites. By tackling the tedious tasks with tech, beekeepers can focus on what they do best: caring for their bees.
 
 <p align="center">
-  <img src="Website/assets/JanBeekeeper.jpeg" width="300" alt="Jan, the beekeeper">
+  <img src="docs/assets/JanBeekeeper.jpeg" width="300" alt="Jan, the beekeeper">
 </p>
 
 ## Getting Started The App 🚀
