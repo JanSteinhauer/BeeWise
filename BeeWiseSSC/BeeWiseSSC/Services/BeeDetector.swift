@@ -28,30 +28,38 @@ class BeeDetector {
             return model
         }
 
+        var compiledURL: URL?
         var sourceURL: URL?
+        
         for bundle in [Bundle.main] + Bundle.allBundles {
-            if let url = bundle.url(forResource: "BeeDetectionModel", withExtension: "mlmodel_src") {
-                sourceURL = url
+            if let url = bundle.url(forResource: "VarroaMiteDetection", withExtension: "mlmodelc") {
+                compiledURL = url
                 break
+            }
+            if sourceURL == nil, let url = bundle.url(forResource: "VarroaMiteDetection", withExtension: "mlmodel") {
+                sourceURL = url
             }
         }
 
-        guard let src = sourceURL else {
-            print("Failed to find BeeDetectionModel.mlmodel_src in bundles")
+        let finalCompiledURL: URL
+        if let cURL = compiledURL {
+            finalCompiledURL = cURL
+        } else if let src = sourceURL {
+            let tempDir = FileManager.default.temporaryDirectory
+            let tempModelURL = tempDir.appendingPathComponent("VarroaMiteDetection.mlmodel")
+            
+            if FileManager.default.fileExists(atPath: tempModelURL.path) {
+                try? FileManager.default.removeItem(at: tempModelURL)
+            }
+            
+            try FileManager.default.copyItem(at: src, to: tempModelURL)
+            finalCompiledURL = try MLModel.compileModel(at: tempModelURL)
+        } else {
+            print("Failed to find VarroaMiteDetection in bundles (neither .mlmodelc nor .mlmodel)")
             throw DetectionError.modelLoadFailed
         }
-
-        let tempDir = FileManager.default.temporaryDirectory
-        let tempModelURL = tempDir.appendingPathComponent("BeeDetectionModel.mlmodel")
         
-        if FileManager.default.fileExists(atPath: tempModelURL.path) {
-            try? FileManager.default.removeItem(at: tempModelURL)
-        }
-        
-        try FileManager.default.copyItem(at: src, to: tempModelURL)
-        
-        let compiledUrl = try MLModel.compileModel(at: tempModelURL)
-        let mlModel = try MLModel(contentsOf: compiledUrl)
+        let mlModel = try MLModel(contentsOf: finalCompiledURL)
         let vnModel = try VNCoreMLModel(for: mlModel)
         
         cachedVNModel = vnModel
@@ -97,54 +105,7 @@ class BeeDetector {
             }
         }
     }
-    
-    static func detectBeesSalience(in image: UIImage) async throws -> [(CGRect, Float)] {
-        guard let cgImage = image.cgImage else {
-            throw DetectionError.invalidImage
-        }
-        
-        let isBeeImage = await containsBee(in: cgImage)
-        guard isBeeImage else {
-            return []
-        }
-        
-        return try await withCheckedThrowingContinuation { continuation in
-            final class ResumeOnce: @unchecked Sendable {
-                var didResume = false
-            }
-            let once = ResumeOnce()
-
-            let request = VNGenerateAttentionBasedSaliencyImageRequest { request, error in
-                guard !once.didResume else { return }
-                once.didResume = true
-
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                
-                guard let observation = request.results?.first as? VNSaliencyImageObservation,
-                      let salientObjects = observation.salientObjects, !salientObjects.isEmpty else {
-                    continuation.resume(returning: [])
-                    return
-                }
-                
-                let results = salientObjects.map { ($0.boundingBox, observation.confidence) }
-                continuation.resume(returning: results)
-            }
-            
-            let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-            do {
-                try handler.perform([request])
-            } catch {
-                guard !once.didResume else { return }
-                once.didResume = true
-                continuation.resume(throwing: error)
-            }
-        }
-    }
-    
-    static func detectBeesML(in image: UIImage) async throws -> [(CGRect, Float)] {
+    static func detectBeesAndMitesML(in image: UIImage) async throws -> (bees: [(CGRect, Float)], mites: [(CGRect, Float)]) {
         guard let cgImage = image.cgImage else {
             throw DetectionError.invalidImage
         }
@@ -167,13 +128,19 @@ class BeeDetector {
                 }
                 
                 var beeResults: [(CGRect, Float)] = []
+                var miteResults: [(CGRect, Float)] = []
                 
                 if let results = req.results as? [VNRecognizedObjectObservation] {
                     for observation in results {
-                        if let topLabel = observation.labels.first, topLabel.identifier.lowercased().contains("bee") {
-                            beeResults.append((observation.boundingBox, topLabel.confidence))
-                        } else if let topLabel = observation.labels.first {
-                            print("Detected unknown object: \(topLabel.identifier) at \(observation.boundingBox) with confidence: \(topLabel.confidence)")
+                        if let topLabel = observation.labels.first {
+                            let labelID = topLabel.identifier.lowercased()
+                            if labelID.contains("bee") {
+                                beeResults.append((observation.boundingBox, topLabel.confidence))
+                            } else if labelID.contains("varroa") || labelID.contains("mite") {
+                                miteResults.append((observation.boundingBox, topLabel.confidence))
+                            } else {
+                                print("Detected other object: \(labelID) at \(observation.boundingBox) with confidence: \(topLabel.confidence)")
+                            }
                         }
                     }
                 } else if req.results is [VNClassificationObservation] {
@@ -182,10 +149,10 @@ class BeeDetector {
                     print("⚠️ Unrecognized observation type: \(type(of: req.results?.first))")
                 }
                 
-                print("Total bees detected in this image: \(beeResults.count)")
+                print("Total bees detected: \(beeResults.count), Total mites detected: \(miteResults.count)")
                 
                 once.didResume = true
-                continuation.resume(returning: beeResults)
+                continuation.resume(returning: (beeResults, miteResults))
             }
             
             mlRequest.imageCropAndScaleOption = .scaleFill
@@ -199,51 +166,6 @@ class BeeDetector {
                 continuation.resume(throwing: error)
             }
         }
-    }
-    
-    static func generateSaliencyHeatmap(for image: UIImage) async throws -> UIImage? {
-         guard let cgImage = image.cgImage else { return nil }
-         
-         return try await withCheckedThrowingContinuation { continuation in
-             final class ResumeOnce: @unchecked Sendable {
-                 var didResume = false
-             }
-             let once = ResumeOnce()
-
-             let request = VNGenerateAttentionBasedSaliencyImageRequest { request, error in
-                 guard !once.didResume else { return }
-                 once.didResume = true
-
-                 if let _ = error {
-                     continuation.resume(returning: nil)
-                     return
-                 }
-                 
-                 guard let observation = request.results?.first as? VNSaliencyImageObservation else {
-                     continuation.resume(returning: nil)
-                     return
-                 }
-                 
-                 let pixelBuffer = observation.pixelBuffer
-                 let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-                 
-                 let context = CIContext()
-                 if let cgImageResult = context.createCGImage(ciImage, from: ciImage.extent) {
-                     continuation.resume(returning: UIImage(cgImage: cgImageResult))
-                 } else {
-                     continuation.resume(returning: nil)
-                 }
-             }
-             
-             let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-             do {
-                 try handler.perform([request])
-             } catch {
-                 guard !once.didResume else { return }
-                 once.didResume = true
-                 continuation.resume(returning: nil)
-             }
-         }
     }
 }
 

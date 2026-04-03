@@ -86,13 +86,9 @@ class HiveDetectionViewModel: ObservableObject {
         
         do {
             for image in selectedImages {
-                let rectsAndConfs = try await BeeDetector.detectBeesML(in: image)
-                bees += rectsAndConfs.count
-                
-                for (boundingBox, _) in rectsAndConfs {
-                    let (miteCount, _) = await MiteDetectionService.checkForMites(in: image, roi: boundingBox)
-                    mites += min(miteCount, 1)
-                }
+                let results = try await BeeDetector.detectBeesAndMitesML(in: image)
+                bees += results.bees.count
+                mites += results.mites.count
             }
             
             // The ML model often has a ~30% false positive rate for mites, so we deduct 30%

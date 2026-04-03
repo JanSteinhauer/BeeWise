@@ -163,22 +163,31 @@ struct BeeDetectorView: View {
         errorMessage = nil
 
         do {
-            async let rectsAndConfs = BeeDetector.detectBeesSalience(in: uiImage)
-            var detections = try await rectsAndConfs
+            let results = try await BeeDetector.detectBeesAndMitesML(in: uiImage)
+            var bees = results.bees
 
-            if detections.isEmpty {
-                detections = [(CGRect(x: 0, y: 0, width: 1, height: 1), 0.0)]
+            if bees.isEmpty {
+                bees = [(CGRect(x: 0, y: 0, width: 1, height: 1), 0.0)]
             }
 
             var newResults: [BeeDetectionResult] = []
-            for (boundingBox, beeConf) in detections {
-                let (count, miteConf) = await MiteDetectionService.checkForMites(in: uiImage, roi: boundingBox)
+            for (beeBox, beeConf) in bees {
+                var count = 0
+                var maxMiteConf: Float = 0.0
+                
+                for (miteBox, miteConf) in results.mites {
+                    if beeBox.intersects(miteBox) {
+                        count += 1
+                        if miteConf > maxMiteConf { maxMiteConf = miteConf }
+                    }
+                }
+                
                 newResults.append(BeeDetectionResult(
-                    rect: boundingBox,
+                    rect: beeBox,
                     isInfected: count > 0,
                     miteCount: count,
                     beeConfidence: beeConf,
-                    miteConfidence: miteConf
+                    miteConfidence: maxMiteConf
                 ))
             }
 
