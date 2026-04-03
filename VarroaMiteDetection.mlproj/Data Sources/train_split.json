@@ -1,0 +1,130 @@
+{
+  "activityEntities" : [
+    "dataSourceTrainingStarted",
+    [
+      {
+        "createdDate" : "2026-03-30T14:35:05Z",
+        "event" : "dataSourceTrainingStarted",
+        "id" : "D1BA8927-3938-4CEB-9164-C683A4F33113",
+        "subtitle" : "VarroaMiteDetection 1",
+        "title" : "Used By"
+      },
+      {
+        "createdDate" : "2026-03-30T14:36:42Z",
+        "event" : "dataSourceTrainingStarted",
+        "id" : "A6B32F9C-5288-48C5-B44C-7954D6D9C7EB",
+        "subtitle" : "VarroaMiteDetection 1",
+        "title" : "Used By"
+      },
+      {
+        "createdDate" : "2026-03-30T18:17:05Z",
+        "event" : "dataSourceTrainingStarted",
+        "id" : "BFDBEC94-A386-4019-9A08-3D72FC7B223A",
+        "subtitle" : "VarroaMiteDetection 1",
+        "title" : "Used By"
+      }
+    ],
+    "dataSourceMetrics",
+    [
+      {
+        "createdDate" : "2026-03-30T14:35:05Z",
+        "event" : "dataSourceMetrics",
+        "id" : "B28440F0-60AF-4B45-8528-19F46E7469FC",
+        "subtitle" : "5 Classes, 3.707 Items",
+        "title" : "Data Summary"
+      },
+      {
+        "createdDate" : "2026-03-30T14:36:42Z",
+        "event" : "dataSourceMetrics",
+        "id" : "194F92DF-1883-42E0-B109-FA8F7498471B",
+        "subtitle" : "5 Classes, 3.707 Items",
+        "title" : "Data Summary"
+      },
+      {
+        "createdDate" : "2026-03-30T18:17:05Z",
+        "event" : "dataSourceMetrics",
+        "id" : "FD43EEA3-127C-4266-A99C-2AEB3CAE5187",
+        "subtitle" : "5 Classes, 3.707 Items",
+        "title" : "Data Summary"
+      }
+    ],
+    "dataSourceCreated",
+    [
+      {
+        "createdDate" : "2026-03-30T14:32:21Z",
+        "event" : "dataSourceCreated",
+        "id" : "F99F42BF-BAE9-41E1-B19A-F5A07411B6F5",
+        "subtitle" : "train_split",
+        "title" : "Data Source Created"
+      }
+    ]
+  ],
+  "createdDate" : "2026-03-30T14:32:21Z",
+  "dataPathRelativeToProjectURL" : "../../../../Downloads/bees-4/train_split/",
+  "dataResult" : {
+    "classesCount" : 5,
+    "createdDate" : "2026-03-30T14:32:21Z",
+    "dataAnalysis" : {
+      "classifierAnalysis" : {
+
+      },
+      "issues" : [
+        {
+          "description" : "Skipping unreadable image files: Snímka obrazovky 2023-03-07 o 11-24-03_png.rf.p91Sx4pDR4Gi0ez1xHPQ.png.",
+          "severity" : "warning"
+        },
+        {
+          "description" : "5 classes found, including varroa, bee, queen",
+          "severity" : "debug"
+        },
+        {
+          "description" : "17008 annotations found, automatically creating validation set",
+          "severity" : "good"
+        },
+        {
+          "description" : "Smallest class is \"queen_cell\" with 51 images",
+          "severity" : "debug"
+        },
+        {
+          "description" : "Largest class is \"varroa\" with 11578 images",
+          "severity" : "debug"
+        }
+      ],
+      "objectDetectorAnalysis" : {
+        "details" : {
+
+        },
+        "labelStats" : {
+          "bee" : 5187,
+          "pollen" : 68,
+          "queen" : 124,
+          "queen_cell" : 51,
+          "varroa" : 11578
+        }
+      },
+      "summary" : {
+        "canUseValidation" : 1,
+        "classCount" : 5,
+        "counterExamples" : 0,
+        "sampleCount" : 3707,
+        "suggestedMaxIterations" : 41000
+      },
+      "warning" : "Skipping unreadable image files: Snímka obrazovky 2023-03-07 o 11-24-03_png.rf.p91Sx4pDR4Gi0ez1xHPQ.png."
+    },
+    "dataSourceID" : "A85CED1A-1574-4A9A-850D-04D0FB9D0458",
+    "dataURL" : "file:///Users/I759164/Downloads/bees-4/train_split/",
+    "itemsCount" : 3707,
+    "warning" : "Skipping unreadable image files: Snímka obrazovky 2023-03-07 o 11-24-03_png.rf.p91Sx4pDR4Gi0ez1xHPQ.png."
+  },
+  "dataURL" : "file:///Users/I759164/Downloads/bees-4/train_split/",
+  "experimentIDs" : [
+    "76BE313C-1C52-446E-BA87-2D0E5B2616FA",
+    "ACA541F8-8CAA-47B5-8F89-E3A132882773"
+  ],
+  "id" : "A85CED1A-1574-4A9A-850D-04D0FB9D0458",
+  "modifiedDate" : "2026-03-30T18:18:21Z",
+  "pathType" : 0,
+  "preferredFilename" : "train_split",
+  "title" : "train_split",
+  "version" : "1.0"
+}

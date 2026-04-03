@@ -1,0 +1,77 @@
+{
+  "activityEntities" : [
+    "dataSourceCreated",
+    [
+      {
+        "createdDate" : "2026-03-30T14:33:38Z",
+        "event" : "dataSourceCreated",
+        "id" : "FEEDAF47-171F-47FB-AA50-DB2986D29750",
+        "subtitle" : "test",
+        "title" : "Data Source Created"
+      }
+    ]
+  ],
+  "createdDate" : "2026-03-30T14:33:38Z",
+  "dataPathRelativeToProjectURL" : "../../../../Downloads/bees-4/test/",
+  "dataResult" : {
+    "classesCount" : 5,
+    "createdDate" : "2026-03-30T14:33:38Z",
+    "dataAnalysis" : {
+      "classifierAnalysis" : {
+
+      },
+      "issues" : [
+        {
+          "description" : "5 classes found, including varroa, bee, pollen",
+          "severity" : "debug"
+        },
+        {
+          "description" : "3429 annotations found, automatically creating validation set",
+          "severity" : "good"
+        },
+        {
+          "description" : "Smallest class is \"queen_cell\" with 15 images",
+          "severity" : "debug"
+        },
+        {
+          "description" : "Largest class is \"varroa\" with 2264 images",
+          "severity" : "debug"
+        }
+      ],
+      "objectDetectorAnalysis" : {
+        "details" : {
+
+        },
+        "labelStats" : {
+          "bee" : 1107,
+          "pollen" : 23,
+          "queen" : 20,
+          "queen_cell" : 15,
+          "varroa" : 2264
+        }
+      },
+      "summary" : {
+        "canUseValidation" : 1,
+        "classCount" : 5,
+        "counterExamples" : 0,
+        "sampleCount" : 794,
+        "suggestedMaxIterations" : 18000
+      }
+    },
+    "dataSourceID" : "E3B49B03-D0A8-4C9F-9AF0-4F0BEF4B7BE5",
+    "dataURL" : "file:///Users/I759164/Downloads/bees-4/test/",
+    "itemsCount" : 794
+  },
+  "dataURL" : "file:///Users/I759164/Downloads/bees-4/test/",
+  "experimentIDs" : [
+    "76BE313C-1C52-446E-BA87-2D0E5B2616FA",
+    "CFD910D9-641E-4D38-9D0D-C2B66F7F8FC3",
+    "ACA541F8-8CAA-47B5-8F89-E3A132882773"
+  ],
+  "id" : "E3B49B03-D0A8-4C9F-9AF0-4F0BEF4B7BE5",
+  "modifiedDate" : "2026-03-30T18:18:19Z",
+  "pathType" : 0,
+  "preferredFilename" : "test",
+  "title" : "test",
+  "version" : "1.0"
+}

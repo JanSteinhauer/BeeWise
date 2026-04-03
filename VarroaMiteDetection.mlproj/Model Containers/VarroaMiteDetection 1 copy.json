@@ -1,0 +1,314 @@
+{
+  "activityEntities" : [
+    "validationDataAdded",
+    [
+      {
+        "createdDate" : "2026-03-30T18:18:18Z",
+        "event" : "validationDataAdded",
+        "id" : "1900B872-1877-40D9-A161-C4A56A363B31",
+        "subtitle" : "validate",
+        "title" : "Validation Data Added"
+      }
+    ],
+    "trainingDataAdded",
+    [
+      {
+        "createdDate" : "2026-03-30T18:18:18Z",
+        "event" : "trainingDataAdded",
+        "id" : "F4FF730F-4C63-48F1-A605-A05FE507B307",
+        "subtitle" : "train_split",
+        "title" : "Training Data Added"
+      }
+    ],
+    "evaluationDataAdded",
+    [
+      {
+        "createdDate" : "2026-03-30T18:18:18Z",
+        "event" : "evaluationDataAdded",
+        "id" : "7B55F4D8-942C-4C1C-9926-6D6710C652CC",
+        "subtitle" : "test",
+        "title" : "Testing Data Added"
+      }
+    ],
+    "experimentCreated",
+    [
+      {
+        "createdDate" : "2026-03-30T18:18:17Z",
+        "event" : "experimentCreated",
+        "id" : "592D34F5-80F7-4DEF-B9F2-E678F5A4ED65",
+        "subtitle" : "VarroaMiteDetection 1 copy",
+        "title" : "Model Source Created"
+      }
+    ]
+  ],
+  "contentDataResult" : {
+    "createdDate" : "2026-03-30T14:32:21Z"
+  },
+  "createdDate" : "2026-03-30T18:18:17Z",
+  "evaluationContainerEntity" : {
+    "createdDate" : "2026-03-30T18:18:22Z",
+    "evaluationEntities" : [
+
+    ],
+    "id" : "85721e38-6857-4fa3-b5ac-40597b93b0d7",
+    "modifiedDate" : "2026-03-30T18:18:22Z",
+    "previewType" : "objectDetector",
+    "testingEvaluationEntity" : {
+      "analysedDataType" : "datasource",
+      "createdDate" : "2026-03-30T18:18:17Z",
+      "dataResult" : {
+        "classesCount" : 5,
+        "createdDate" : "2026-03-30T18:18:17Z",
+        "dataAnalysis" : {
+          "classifierAnalysis" : {
+
+          },
+          "issues" : [
+            {
+              "description" : "5 classes found, including varroa, bee, pollen",
+              "severity" : "debug"
+            },
+            {
+              "description" : "3429 annotations found, automatically creating validation set",
+              "severity" : "good"
+            },
+            {
+              "description" : "Smallest class is \"queen_cell\" with 15 images",
+              "severity" : "debug"
+            },
+            {
+              "description" : "Largest class is \"varroa\" with 2264 images",
+              "severity" : "debug"
+            }
+          ],
+          "objectDetectorAnalysis" : {
+            "details" : {
+
+            },
+            "labelStats" : {
+              "bee" : 1107,
+              "pollen" : 23,
+              "queen" : 20,
+              "queen_cell" : 15,
+              "varroa" : 2264
+            }
+          },
+          "summary" : {
+            "canUseValidation" : 1,
+            "classCount" : 5,
+            "counterExamples" : 0,
+            "sampleCount" : 794,
+            "suggestedMaxIterations" : 18000
+          }
+        },
+        "dataSourceID" : "E3B49B03-D0A8-4C9F-9AF0-4F0BEF4B7BE5",
+        "dataURL" : "file:///Users/I759164/Downloads/bees-4/test/",
+        "itemsCount" : 794
+      },
+      "dataSourceID" : "E3B49B03-D0A8-4C9F-9AF0-4F0BEF4B7BE5",
+      "id" : "ec426195-a119-4205-9a56-dbd09edf8b69"
+    },
+    "trainingEvaluationEntity" : {
+      "analysedDataType" : "none",
+      "createdDate" : "2026-03-30T18:18:17Z",
+      "dataResult" : {
+        "createdDate" : "2026-03-30T18:18:17Z",
+        "dataSourceID" : "A85CED1A-1574-4A9A-850D-04D0FB9D0458",
+        "dataURL" : "file:///Users/I759164/Downloads/bees-4/train_split/"
+      },
+      "dataSourceID" : "A85CED1A-1574-4A9A-850D-04D0FB9D0458",
+      "id" : "6950b115-cf7f-4988-9653-ac08e1891316"
+    },
+    "validationEvaluationEntity" : {
+      "analysedDataType" : "datasource",
+      "createdDate" : "2026-03-30T18:18:17Z",
+      "dataResult" : {
+        "createdDate" : "2026-03-30T18:18:17Z",
+        "dataSourceID" : "3CD712E3-9958-4CFD-BC67-865FA69A5FE1",
+        "dataURL" : "file:///Users/I759164/Downloads/bees-4/validate/"
+      },
+      "dataSourceID" : "3CD712E3-9958-4CFD-BC67-865FA69A5FE1",
+      "id" : "081b3950-2630-41ec-a5d2-89ca5e64cd78"
+    }
+  },
+  "evaluationEntity" : {
+    "analysedDataType" : "none",
+    "dataResult" : {
+
+    },
+    "id" : "6d3c2102-ec94-4c7c-8d96-31769d7d54a7"
+  },
+  "evaluationState" : "ready",
+  "id" : "ACA541F8-8CAA-47B5-8F89-E3A132882773",
+  "modelEntity" : {
+    "createdDate" : "2026-03-30T18:18:17Z",
+    "experimentID" : "15868E74-903E-4A80-B721-DC97266F858F",
+    "id" : "1FAA03AE-62DA-4720-A353-E37099C01150",
+    "modifiedDate" : "2026-03-30T18:18:17Z",
+    "title" : "",
+    "version" : "1.0"
+  },
+  "modifiedDate" : "2026-03-30T18:18:22Z",
+  "preferredFilename" : "VarroaMiteDetection 1 copy",
+  "settingEntity" : {
+    "algorithmType" : "maxEnt",
+    "augmentations" : [
+
+    ],
+    "featureNames" : [
+
+    ],
+    "handActionClassifierAugmentations" : [
+
+    ],
+    "handPoseClassifierAugmentations" : [
+
+    ],
+    "harVideoAugmentations" : 0,
+    "iterationCount" : 10000,
+    "odAlgorithmType" : "darknetYolo",
+    "odGridHeight" : 13,
+    "odGridWidth" : 13,
+    "recommendedIterationCount" : 41000,
+    "seedType" : "default",
+    "styleTransferAlgorithmType" : "image",
+    "taskType" : "objectDetector",
+    "transferLearningEmbeddingType" : "dynamic"
+  },
+  "snapshotRole" : {
+    "withoutSnapshots" : 0
+  },
+  "state" : "ready",
+  "title" : "VarroaMiteDetection 1 copy",
+  "trainingEntity" : {
+    "analysedDataType" : "datasource",
+    "checkpointMetrics" : {
+
+    },
+    "dataResult" : {
+      "classesCount" : 5,
+      "createdDate" : "2026-03-30T18:18:17Z",
+      "dataAnalysis" : {
+        "classifierAnalysis" : {
+
+        },
+        "issues" : [
+          {
+            "description" : "Skipping unreadable image files: Snímka obrazovky 2023-03-07 o 11-24-03_png.rf.p91Sx4pDR4Gi0ez1xHPQ.png.",
+            "severity" : "warning"
+          },
+          {
+            "description" : "5 classes found, including varroa, bee, queen",
+            "severity" : "debug"
+          },
+          {
+            "description" : "17008 annotations found, automatically creating validation set",
+            "severity" : "good"
+          },
+          {
+            "description" : "Smallest class is \"queen_cell\" with 51 images",
+            "severity" : "debug"
+          },
+          {
+            "description" : "Largest class is \"varroa\" with 11578 images",
+            "severity" : "debug"
+          }
+        ],
+        "objectDetectorAnalysis" : {
+          "details" : {
+
+          },
+          "labelStats" : {
+            "bee" : 5187,
+            "pollen" : 68,
+            "queen" : 124,
+            "queen_cell" : 51,
+            "varroa" : 11578
+          }
+        },
+        "summary" : {
+          "canUseValidation" : 1,
+          "classCount" : 5,
+          "counterExamples" : 0,
+          "sampleCount" : 3707,
+          "suggestedMaxIterations" : 41000
+        },
+        "warning" : "Skipping unreadable image files: Snímka obrazovky 2023-03-07 o 11-24-03_png.rf.p91Sx4pDR4Gi0ez1xHPQ.png."
+      },
+      "dataSourceID" : "A85CED1A-1574-4A9A-850D-04D0FB9D0458",
+      "dataURL" : "file:///Users/I759164/Downloads/bees-4/train_split/",
+      "itemsCount" : 3707,
+      "warning" : "Skipping unreadable image files: Snímka obrazovky 2023-03-07 o 11-24-03_png.rf.p91Sx4pDR4Gi0ez1xHPQ.png."
+    },
+    "dataSourceID" : "A85CED1A-1574-4A9A-850D-04D0FB9D0458",
+    "featureExtractionCheckpointMayBeAvailable" : false,
+    "progress" : [
+
+    ],
+    "snapshottableCheckpoints" : {
+
+    }
+  },
+  "validationEntity" : {
+    "analysedDataType" : "datasource",
+    "dataResult" : {
+      "classesCount" : 6,
+      "createdDate" : "2026-03-30T18:18:17Z",
+      "dataAnalysis" : {
+        "classifierAnalysis" : {
+
+        },
+        "issues" : [
+          {
+            "description" : "6 classes found, including varroa, bee, queen",
+            "severity" : "debug"
+          },
+          {
+            "description" : "3589 annotations found, automatically creating validation set",
+            "severity" : "good"
+          },
+          {
+            "description" : "Smallest class is \"mite\" with 1 images",
+            "severity" : "debug"
+          },
+          {
+            "description" : "Largest class is \"varroa\" with 2300 images",
+            "severity" : "debug"
+          }
+        ],
+        "objectDetectorAnalysis" : {
+          "details" : {
+
+          },
+          "labelStats" : {
+            "bee" : 1227,
+            "mite" : 1,
+            "pollen" : 19,
+            "queen" : 37,
+            "queen_cell" : 5,
+            "varroa" : 2300
+          }
+        },
+        "summary" : {
+          "canUseValidation" : 1,
+          "classCount" : 6,
+          "counterExamples" : 0,
+          "sampleCount" : 796,
+          "suggestedMaxIterations" : 19000
+        }
+      },
+      "dataSourceID" : "3CD712E3-9958-4CFD-BC67-865FA69A5FE1",
+      "dataURL" : "file:///Users/I759164/Downloads/bees-4/validate/",
+      "itemsCount" : 796
+    },
+    "dataSourceID" : "3CD712E3-9958-4CFD-BC67-865FA69A5FE1",
+    "splitOptions" : {
+      "strategy" : {
+        "automatic" : {
+
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -1,0 +1,77 @@
+{
+  "activityEntities" : [
+    "dataSourceCreated",
+    [
+      {
+        "createdDate" : "2026-03-30T14:33:22Z",
+        "event" : "dataSourceCreated",
+        "id" : "37E5ADCC-BA4D-4D86-A2BE-0B7BAFC65F1B",
+        "subtitle" : "validate",
+        "title" : "Data Source Created"
+      }
+    ]
+  ],
+  "createdDate" : "2026-03-30T14:33:22Z",
+  "dataPathRelativeToProjectURL" : "../../../../Downloads/bees-4/validate/",
+  "dataResult" : {
+    "classesCount" : 6,
+    "createdDate" : "2026-03-30T14:33:22Z",
+    "dataAnalysis" : {
+      "classifierAnalysis" : {
+
+      },
+      "issues" : [
+        {
+          "description" : "6 classes found, including varroa, bee, queen",
+          "severity" : "debug"
+        },
+        {
+          "description" : "3589 annotations found, automatically creating validation set",
+          "severity" : "good"
+        },
+        {
+          "description" : "Smallest class is \"mite\" with 1 images",
+          "severity" : "debug"
+        },
+        {
+          "description" : "Largest class is \"varroa\" with 2300 images",
+          "severity" : "debug"
+        }
+      ],
+      "objectDetectorAnalysis" : {
+        "details" : {
+
+        },
+        "labelStats" : {
+          "bee" : 1227,
+          "mite" : 1,
+          "pollen" : 19,
+          "queen" : 37,
+          "queen_cell" : 5,
+          "varroa" : 2300
+        }
+      },
+      "summary" : {
+        "canUseValidation" : 1,
+        "classCount" : 6,
+        "counterExamples" : 0,
+        "sampleCount" : 796,
+        "suggestedMaxIterations" : 19000
+      }
+    },
+    "dataSourceID" : "3CD712E3-9958-4CFD-BC67-865FA69A5FE1",
+    "dataURL" : "file:///Users/I759164/Downloads/bees-4/validate/",
+    "itemsCount" : 796
+  },
+  "dataURL" : "file:///Users/I759164/Downloads/bees-4/validate/",
+  "experimentIDs" : [
+    "76BE313C-1C52-446E-BA87-2D0E5B2616FA",
+    "ACA541F8-8CAA-47B5-8F89-E3A132882773"
+  ],
+  "id" : "3CD712E3-9958-4CFD-BC67-865FA69A5FE1",
+  "modifiedDate" : "2026-03-30T18:18:19Z",
+  "pathType" : 0,
+  "preferredFilename" : "validate",
+  "title" : "validate",
+  "version" : "1.0"
+}

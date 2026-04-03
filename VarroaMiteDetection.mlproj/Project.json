@@ -1,0 +1,29 @@
+{
+  "activityEntities" : [
+    "projectCreated",
+    [
+      {
+        "createdDate" : "2026-03-30T14:32:03Z",
+        "event" : "projectCreated",
+        "id" : "A6F21FBE-035D-4987-9239-F79722F251DA",
+        "subtitle" : "VarroaMiteDetection",
+        "title" : "Project Created"
+      }
+    ]
+  ],
+  "authorName" : "Steinhauer, Jan",
+  "createdDate" : "2026-03-30T14:32:03Z",
+  "description" : "",
+  "id" : "0D8D51D6-48CA-4C49-96DF-701C6FB82FBB",
+  "license" : "MIT",
+  "location" : "",
+  "modifiedDate" : "2026-03-30T14:32:03Z",
+  "projectName" : "VarroaMiteDetection",
+  "settingsEntity" : {
+    "snapshotOnExtendTraining" : true,
+    "snapshotOnResumeTraining" : false
+  },
+  "taskType" : "objectDetector",
+  "title" : "Object Detection",
+  "version" : "1.1"
+}
