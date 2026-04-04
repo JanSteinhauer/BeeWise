@@ -7,6 +7,7 @@
 
 import SwiftUI
 import PhotosUI
+import UIKit
 
 struct HiveDetectionView: View {
     @StateObject private var viewModel: HiveDetectionViewModel
@@ -41,7 +42,9 @@ struct HiveDetectionView: View {
                     VStack(spacing: 16) {
                         HStack(spacing: 20) {
                             Button {
-                                viewModel.showingCamera = true
+                                if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                                    viewModel.showingCamera = true
+                                }
                             } label: {
                                 Label("Camera", systemImage: "camera.fill")
                                     .padding()
