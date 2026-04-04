@@ -36,32 +36,26 @@ struct BeeDetectorView: View {
                             .scaledToFit()
                             .frame(maxWidth: 600, maxHeight: 600)
                             .overlay(
-                                GeometryReader { geometry in
-                                    ForEach(beeResults) { result in
-                                        // Bounding box
-                                        Rectangle()
-                                            .stroke(result.isInfected ? Color.red : Color.green, lineWidth: 4)
-                                            .frame(
-                                                width: result.rect.width * geometry.size.width,
-                                                height: result.rect.height * geometry.size.height
-                                            )
-                                            .position(
-                                                x: result.rect.midX * geometry.size.width,
-                                                y: (1 - result.rect.midY) * geometry.size.height
-                                            )
-
-                                        // Label
-                                        Text(result.isInfected ? "INFECTED (\(result.miteCount))" : "HEALTHY")
-                                            .font(.headline)
-                                            .foregroundColor(.white)
-                                            .padding(5)
-                                            .background(result.isInfected ? Color.red : Color.green)
-                                            .cornerRadius(5)
-                                            .position(
-                                                x: result.rect.midX * geometry.size.width,
-                                                y: (1 - result.rect.midY) * geometry.size.height
-                                                    - (result.rect.height * geometry.size.height / 2) - 20
-                                            )
+                                Group {
+                                    if !beeResults.isEmpty {
+                                        let isInfected = beeResults.contains(where: { $0.isInfected })
+                                        let totalMites = beeResults.reduce(0) { $0 + $1.miteCount }
+                                        let color = isInfected ? Color.red : Color.green
+                                        let text = isInfected ? "INFECTED (\(totalMites))" : "HEALTHY"
+                                        
+                                        ZStack(alignment: .top) {
+                                            Rectangle()
+                                                .stroke(color, lineWidth: 6)
+                                            
+                                            Text(text)
+                                                .font(.title2.bold())
+                                                .foregroundColor(.white)
+                                                .padding(.horizontal, 16)
+                                                .padding(.vertical, 8)
+                                                .background(color)
+                                                .cornerRadius(8)
+                                                .padding(.top, 16)
+                                        }
                                     }
                                 }
                             )
