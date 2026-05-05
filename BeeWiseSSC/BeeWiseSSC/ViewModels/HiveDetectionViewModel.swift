@@ -91,14 +91,12 @@ class HiveDetectionViewModel: ObservableObject {
                 mites += results.mites.count
             }
             
-            // The ML model often has a ~30% false positive rate for mites, so we deduct 30%
-            let adjustedMites = Int(Double(mites) * 0.7)
-            let result = VarroaRecommendationEngine.analyze(totalBees: bees, totalMites: adjustedMites, hive: hive)
+            let result = VarroaRecommendationEngine.analyze(totalBees: bees, totalMites: mites, hive: hive)
             
             await MainActor.run {
                 withAnimation {
                     self.totalBeesFound = bees
-                    self.totalMitesFound = adjustedMites
+                    self.totalMitesFound = mites
                     self.analysisResult = result
                 }
             }
