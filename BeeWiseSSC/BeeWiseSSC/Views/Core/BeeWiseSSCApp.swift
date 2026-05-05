@@ -13,13 +13,14 @@ struct BeeWiseSSCApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if isOnboardingCompleted {
-                ContentView()
-                    
-            } else {
-                OnboardingView()
+            Group {
+                if isOnboardingCompleted {
+                    ContentView()
+                } else {
+                    OnboardingView()
+                }
             }
-            
+            .preferredColorScheme(.light)
         }
     }
 }
