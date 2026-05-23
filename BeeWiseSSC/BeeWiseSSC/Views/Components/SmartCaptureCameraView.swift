@@ -2,11 +2,13 @@
 //  SmartCaptureCameraView.swift
 //  BeeWiseSSC
 //
-//  Smart auto-capture for honeycomb frames. Uses Vision's rectangle
-//  detector to spot a frame in view, CoreMotion to confirm the device
-//  is steady, and AVCapture's adjusting flags to wait for focus before
-//  firing the shutter automatically. Plays a system sound and flashes
-//  the screen on success so the beekeeper knows hands-free capture worked.
+//  Smart auto-capture for honeycomb frames. Combines several cues so that
+//  any one of them is enough to trigger a shot:
+//   - Vision rectangle detector (frame edges)
+//   - Vision classifier (bee/honeycomb/hive/insect labels)
+//   - Attention-based saliency (something worth looking at is centered & large)
+//  CoreMotion confirms the device isn't being actively swept around, and
+//  AVCapture's adjusting flags wait for focus before firing the shutter.
 //
 
 import SwiftUI
@@ -92,34 +94,42 @@ struct SmartCaptureCameraView: View {
 
 enum SmartCaptureStatus: Equatable {
     case searching
-    case holdSteady
+    case holdSteadyFrame
+    case holdSteadyBee
+    case holdSteadyComb
     case focusing
     case captured
 
     var message: String {
         switch self {
-        case .searching: return "Hold a frame in front of the camera"
-        case .holdSteady: return "Hold steady…"
-        case .focusing: return "Focusing…"
-        case .captured: return "Captured!"
+        case .searching:        return "Point at a frame, bees, or comb"
+        case .holdSteadyFrame:  return "Frame detected — hold steady"
+        case .holdSteadyBee:    return "Bees detected — hold steady"
+        case .holdSteadyComb:   return "Comb detected — hold steady"
+        case .focusing:         return "Focusing…"
+        case .captured:         return "Captured!"
         }
     }
 
     var icon: String {
         switch self {
-        case .searching: return "viewfinder"
-        case .holdSteady: return "hand.raised.fill"
-        case .focusing: return "scope"
-        case .captured: return "checkmark.circle.fill"
+        case .searching:       return "viewfinder"
+        case .holdSteadyFrame: return "rectangle.dashed"
+        case .holdSteadyBee:   return "ant.fill"
+        case .holdSteadyComb:  return "hexagon.fill"
+        case .focusing:        return "scope"
+        case .captured:        return "checkmark.circle.fill"
         }
     }
 
     var color: Color {
         switch self {
-        case .searching: return .blue
-        case .holdSteady: return .orange
-        case .focusing: return .purple
-        case .captured: return .green
+        case .searching:       return .blue
+        case .holdSteadyFrame: return .orange
+        case .holdSteadyBee:   return .orange
+        case .holdSteadyComb:  return .orange
+        case .focusing:        return .purple
+        case .captured:        return .green
         }
     }
 }
@@ -140,7 +150,6 @@ private struct SmartCaptureCameraContainer: UIViewControllerRepresentable {
         }
         vc.captureHandler = { image in
             DispatchQueue.main.async {
-                // Flash animation
                 withAnimation(.easeOut(duration: 0.08)) {
                     self.flashOpacity = 0.9
                 }
@@ -156,6 +165,14 @@ private struct SmartCaptureCameraContainer: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: SmartCaptureViewController, context: Context) {}
+}
+
+// MARK: - Cue source for status messaging
+
+private enum CaptureCue {
+    case frame
+    case bee
+    case comb
 }
 
 // MARK: - View controller doing the actual work
@@ -175,18 +192,34 @@ final class SmartCaptureViewController: UIViewController,
     private var deviceInput: AVCaptureDeviceInput?
 
     private let motionManager = CMMotionManager()
-    private var latestRotationRate: Double = 0  // rad/s magnitude
+    private var rotationSamples: [Double] = []  // rolling buffer of recent rotation magnitudes
+    private let motionBufferSize = 10
 
     // Stability tracking
-    private var rectangleSeenSince: Date?
+    private var subjectSeenSince: Date?
     private var lastCaptureAt: Date?
-    private let requiredStableSeconds: TimeInterval = 0.6
-    private let captureCooldown: TimeInterval = 2.5
-    private let motionThreshold: Double = 0.35  // rad/s — anything above means moving
+    private let requiredStableSeconds: TimeInterval = 0.35
+    private let captureCooldown: TimeInterval = 1.2
+    private let motionThreshold: Double = 0.6           // rad/s — per-sample
+    private let motionTolerantFraction: Double = 0.3    // up to 30% of recent samples can spike
 
     private var isCapturing = false
-    private var lastSampleAnalyzedAt: Date = .distantPast
-    private let analysisInterval: TimeInterval = 0.15
+
+    // Rectangle cadence
+    private var lastRectAnalyzedAt: Date = .distantPast
+    private let rectInterval: TimeInterval = 0.15
+
+    // ML / saliency cadence + cache (runs less often, results live briefly)
+    private var lastMLAnalyzedAt: Date = .distantPast
+    private let mlInterval: TimeInterval = 0.4
+    private let mlResultTTL: TimeInterval = 1.0
+    private var mlInFlight = false
+    private let mlQueue = DispatchQueue(label: "beewise.smartcapture.ml", qos: .userInitiated)
+
+    private var lastBeeSeenAt: Date?
+    private var lastCombSeenAt: Date?
+    private var lastFrameSeenAt: Date?
+    private let frameResultTTL: TimeInterval = 0.5  // rectangle cue is cheap, expire faster
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -237,7 +270,6 @@ final class SmartCaptureViewController: UIViewController,
         session.addInput(input)
         deviceInput = input
 
-        // Continuous autofocus & exposure so we can react to "adjusting" flags.
         if (try? device.lockForConfiguration()) != nil {
             if device.isFocusModeSupported(.continuousAutoFocus) {
                 device.focusMode = .continuousAutoFocus
@@ -248,7 +280,6 @@ final class SmartCaptureViewController: UIViewController,
             device.unlockForConfiguration()
         }
 
-        // Live frame stream for Vision
         videoOutput.alwaysDiscardsLateVideoFrames = true
         videoOutput.videoSettings = [
             kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
@@ -284,8 +315,24 @@ final class SmartCaptureViewController: UIViewController,
             guard let self = self, let m = motion else { return }
             let r = m.rotationRate
             let mag = sqrt(r.x * r.x + r.y * r.y + r.z * r.z)
-            self.latestRotationRate = mag
+            self.appendRotationSample(mag)
         }
+    }
+
+    private func appendRotationSample(_ value: Double) {
+        rotationSamples.append(value)
+        if rotationSamples.count > motionBufferSize {
+            rotationSamples.removeFirst(rotationSamples.count - motionBufferSize)
+        }
+    }
+
+    /// True when the device is being actively swept around. A single twitch is tolerated;
+    /// sustained motion across the rolling buffer is not.
+    private var isMovingTooMuch: Bool {
+        guard !rotationSamples.isEmpty else { return false }
+        let spikes = rotationSamples.filter { $0 > motionThreshold }.count
+        let fraction = Double(spikes) / Double(rotationSamples.count)
+        return fraction > motionTolerantFraction
     }
 
     // MARK: - Live frame analysis
@@ -296,66 +343,152 @@ final class SmartCaptureViewController: UIViewController,
         guard !isCapturing else { return }
 
         let now = Date()
-        if now.timeIntervalSince(lastSampleAnalyzedAt) < analysisInterval { return }
-        lastSampleAnalyzedAt = now
-
         if let last = lastCaptureAt, now.timeIntervalSince(last) < captureCooldown {
             return
         }
 
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
+        // Cheap rectangle pass — every rectInterval
+        if now.timeIntervalSince(lastRectAnalyzedAt) >= rectInterval {
+            lastRectAnalyzedAt = now
+            runRectangleRequest(on: pixelBuffer)
+        }
+
+        // Heavier classifier + saliency pass — every mlInterval, off the video queue
+        if !mlInFlight, now.timeIntervalSince(lastMLAnalyzedAt) >= mlInterval {
+            lastMLAnalyzedAt = now
+            mlInFlight = true
+            // Retain the pixel buffer for use on another queue.
+            let retainedBuffer = pixelBuffer
+            mlQueue.async { [weak self] in
+                self?.runMLAndSaliency(on: retainedBuffer)
+                self?.mlInFlight = false
+            }
+        }
+
+        evaluateCaptureDecision()
+    }
+
+    private func runRectangleRequest(on pixelBuffer: CVPixelBuffer) {
         let request = VNDetectRectanglesRequest { [weak self] req, _ in
             guard let self = self else { return }
             let rects = (req.results as? [VNRectangleObservation]) ?? []
-            // Honeycomb frame: roughly rectangular, taking up a meaningful chunk of the view.
             let bigEnough = rects.first { obs in
                 let area = obs.boundingBox.width * obs.boundingBox.height
-                return area > 0.25
+                return area > 0.15
             }
-            self.handleDetection(foundFrame: bigEnough != nil)
+            if bigEnough != nil {
+                self.lastFrameSeenAt = Date()
+            }
         }
         request.minimumAspectRatio = 0.4
         request.maximumAspectRatio = 1.0
-        request.minimumSize = 0.4
-        request.minimumConfidence = 0.6
+        request.minimumSize = 0.25
+        request.minimumConfidence = 0.5
         request.maximumObservations = 4
 
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .right, options: [:])
         try? handler.perform([request])
     }
 
-    private func handleDetection(foundFrame: Bool) {
+    private func runMLAndSaliency(on pixelBuffer: CVPixelBuffer) {
+        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .right, options: [:])
+
+        // Classifier — bee / honeycomb / hive / insect
+        let classify = VNClassifyImageRequest { [weak self] req, _ in
+            guard let self = self,
+                  let results = req.results as? [VNClassificationObservation] else { return }
+            let beeIDs = ["bee", "insect", "invertebrate", "arthropod"]
+            let combIDs = ["honeycomb", "hive", "comb"]
+            for obs in results {
+                guard obs.confidence > 0.05 else { continue }
+                let id = obs.identifier.lowercased()
+                if beeIDs.contains(where: { id.contains($0) }) {
+                    self.lastBeeSeenAt = Date()
+                }
+                if combIDs.contains(where: { id.contains($0) }) {
+                    self.lastCombSeenAt = Date()
+                }
+            }
+        }
+
+        // Saliency — if the salient region is large and reasonably centered, treat it
+        // as a "subject in view" cue (catches comb texture even when the rectangle
+        // detector misses ragged edges).
+        let saliency = VNGenerateAttentionBasedSaliencyImageRequest { [weak self] req, _ in
+            guard let self = self,
+                  let result = (req.results as? [VNSaliencyImageObservation])?.first,
+                  let salient = result.salientObjects?.first else { return }
+            let box = salient.boundingBox
+            let area = box.width * box.height
+            let cx = box.midX
+            let cy = box.midY
+            let centered = abs(cx - 0.5) < 0.3 && abs(cy - 0.5) < 0.35
+            if area > 0.18 && centered {
+                self.lastCombSeenAt = Date()
+            }
+        }
+
+        try? handler.perform([classify, saliency])
+    }
+
+    private func evaluateCaptureDecision() {
         guard !isCapturing else { return }
 
-        if !foundFrame {
-            rectangleSeenSince = nil
+        let cue = freshestCue()
+
+        guard let cue = cue else {
+            subjectSeenSince = nil
             statusHandler?(.searching)
             return
         }
 
-        if rectangleSeenSince == nil {
-            rectangleSeenSince = Date()
+        if subjectSeenSince == nil {
+            subjectSeenSince = Date()
         }
 
-        // Motion check
-        if latestRotationRate > motionThreshold {
-            rectangleSeenSince = Date()  // reset stability clock
-            statusHandler?(.holdSteady)
+        if isMovingTooMuch {
+            statusHandler?(holdStatus(for: cue))
             return
         }
 
-        // Focus check
         if let device = deviceInput?.device, device.isAdjustingFocus || device.isAdjustingExposure {
             statusHandler?(.focusing)
             return
         }
 
-        let stableFor = Date().timeIntervalSince(rectangleSeenSince ?? Date())
+        let stableFor = Date().timeIntervalSince(subjectSeenSince ?? Date())
         if stableFor >= requiredStableSeconds {
             triggerCapture()
         } else {
-            statusHandler?(.holdSteady)
+            statusHandler?(holdStatus(for: cue))
+        }
+    }
+
+    /// Picks the most recently observed cue across rectangle / bee / comb, if any
+    /// is still within its TTL.
+    private func freshestCue() -> CaptureCue? {
+        let now = Date()
+        var best: (CaptureCue, Date)? = nil
+
+        if let t = lastFrameSeenAt, now.timeIntervalSince(t) < frameResultTTL {
+            best = (.frame, t)
+        }
+        if let t = lastBeeSeenAt, now.timeIntervalSince(t) < mlResultTTL {
+            if best == nil || t > best!.1 { best = (.bee, t) }
+        }
+        if let t = lastCombSeenAt, now.timeIntervalSince(t) < mlResultTTL {
+            if best == nil || t > best!.1 { best = (.comb, t) }
+        }
+        return best?.0
+    }
+
+    private func holdStatus(for cue: CaptureCue) -> SmartCaptureStatus {
+        switch cue {
+        case .frame: return .holdSteadyFrame
+        case .bee:   return .holdSteadyBee
+        case .comb:  return .holdSteadyComb
         }
     }
 
@@ -365,7 +498,11 @@ final class SmartCaptureViewController: UIViewController,
         guard !isCapturing else { return }
         isCapturing = true
         lastCaptureAt = Date()
-        rectangleSeenSince = nil
+        subjectSeenSince = nil
+        // Clear cue cache so the next decision starts fresh after the cooldown.
+        lastFrameSeenAt = nil
+        lastBeeSeenAt = nil
+        lastCombSeenAt = nil
 
         let settings = AVCapturePhotoSettings()
         settings.flashMode = .off
@@ -386,13 +523,11 @@ final class SmartCaptureViewController: UIViewController,
             return
         }
 
-        // Loud shutter sound (system shutter; respects silent switch on some devices).
         AudioServicesPlaySystemSound(1108)
 
         statusHandler?(.captured)
         captureHandler?(image)
 
-        // Quickly revert status so the next capture cycle starts fresh.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
             self?.statusHandler?(.searching)
         }
