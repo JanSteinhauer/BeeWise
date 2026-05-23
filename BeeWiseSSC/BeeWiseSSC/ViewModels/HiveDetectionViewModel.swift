@@ -16,6 +16,7 @@ class HiveDetectionViewModel: ObservableObject {
     @Published var selectedImages: [UIImage] = []
     @Published var isDetecting: Bool = false
     @Published var showingCamera: Bool = false
+    @Published var showingSmartCapture: Bool = false
     @Published var cameraImage: UIImage?
     
     @Published var analysisResult: VarroaAnalysisResult?
@@ -62,6 +63,10 @@ class HiveDetectionViewModel: ObservableObject {
             selectedImages.append(img)
             cameraImage = nil
         }
+    }
+
+    func handleSmartCapturedImage(_ image: UIImage) {
+        selectedImages.append(image)
     }
     
     func loadImages(from items: [PhotosPickerItem]) async {

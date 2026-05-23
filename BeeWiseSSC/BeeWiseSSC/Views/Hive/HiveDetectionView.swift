@@ -53,7 +53,7 @@ struct HiveDetectionView: View {
                                     .foregroundStyle(.blue)
                                     .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
-                            
+
                             PhotosPicker(selection: $viewModel.selectedItems, matching: .images, photoLibrary: .shared()) {
                                 Label("Library", systemImage: "photo.fill.on.rectangle.fill")
                                     .padding()
@@ -65,6 +65,19 @@ struct HiveDetectionView: View {
                             .onChange(of: viewModel.selectedItems) { oldValue, newValue in
                                 Task { await viewModel.loadImages(from: newValue) }
                             }
+                        }
+
+                        Button {
+                            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                                viewModel.showingSmartCapture = true
+                            }
+                        } label: {
+                            Label("Smart Capture (Hands-Free)", systemImage: "sparkles.rectangle.stack.fill")
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.beeGold.opacity(0.18))
+                                .foregroundStyle(Color.beeGold)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                         
                         Text("Or select a demo image:")
@@ -149,6 +162,11 @@ struct HiveDetectionView: View {
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $viewModel.showingCamera) {
             ImagePicker(selectedImage: $viewModel.cameraImage, sourceType: .camera)
+        }
+        .sheet(isPresented: $viewModel.showingSmartCapture) {
+            SmartCaptureCameraView { image in
+                viewModel.handleSmartCapturedImage(image)
+            }
         }
         .onChange(of: viewModel.cameraImage) { oldValue, newValue in
             viewModel.handleCameraImage(newValue)
